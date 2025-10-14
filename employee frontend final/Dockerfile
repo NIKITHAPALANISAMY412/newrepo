@@ -26,6 +26,8 @@ WORKDIR /usr/share/nginx/html
 # Remove the default Nginx website
 RUN rm -rf ./*
 
+
+
 # Copy the built Angular app from the build stage
 COPY --from=build /app/dist/frontend/ /usr/share/nginx/html/
 
