@@ -1,33 +1,33 @@
-name: Backend - Build and Push Docker Image
+# name: Backend - Build and Push Docker Image
 
-on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:
+# on:
+#   push:
+#     branches: ["main"]
+#   workflow_dispatch:
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Docker login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Docker login
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push backend Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./emp_backend
-          file: ./emp_backend/Dockerfile
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/emp-backend:latest
-            ${{ secrets.DOCKER_USERNAME }}/emp-backend:${{ github.sha }}
+#       - name: Build and push backend Docker image
+#         uses: docker/build-push-action@v6
+#         with:
+#           context: ./emp_backend
+#           file: ./emp_backend/Dockerfile
+#           push: true
+#           tags: |
+#             ${{ secrets.DOCKER_USERNAME }}/emp-backend:latest
+#             ${{ secrets.DOCKER_USERNAME }}/emp-backend:${{ github.sha }}
 
-      - name: Success
-        run: echo "Emp backend Docker image built and pushed successfully!"
+#       - name: Success
+#         run: echo "Emp backend Docker image built and pushed successfully!"
