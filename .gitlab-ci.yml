@@ -3,7 +3,6 @@ stages:
   - push
 
 variables:
-  # Docker image name in GitLab Container Registry
   DOCKER_IMAGE: "$CI_REGISTRY_IMAGE/angular-frontend"
 
 # Use Docker-in-Docker
@@ -20,15 +19,15 @@ before_script:
 build-frontend:
   stage: build
   script:
-    # Build Docker image from Dockerfile
+    # Build Docker image using your Dockerfile
     - docker build -t $DOCKER_IMAGE:latest -f Dockerfile .
-    # Tag with commit SHA for versioning
+    # Tag image with commit SHA
     - docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
   only:
     - main
     - merge_requests
 
-# Stage 2: Push Docker image to registry
+# Stage 2: Push Docker image to GitLab registry
 push-frontend:
   stage: push
   script:
