@@ -5,28 +5,28 @@ stages:
 
 variables:
   DOCKER_IMAGE: "$CI_REGISTRY_IMAGE/angular-frontend"
-  NODE_VERSION: "20"  # Node.js version to use
+  NODE_VERSION: "20"
 
-# Use Node.js image for install and build
 image: node:$NODE_VERSION
 
 # Stage 1: Install dependencies
 install-dependencies:
   stage: install
   script:
-    # Use npm install in case package-lock.json is missing
+    - cd "employee frontend final"
     - npm install
   only:
     - dev
 
-# Stage 2: Build Angular application
+# Stage 2: Build Angular app
 build-frontend:
   stage: build
   script:
-    - npm run build --prod  # Build production files in dist/
+    - cd "employee frontend final"
+    - npm run build --prod
   artifacts:
     paths:
-      - dist/
+      - "employee frontend final/dist/"
   only:
     - dev
 
@@ -39,14 +39,10 @@ docker-build-push:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    # Login to GitLab Container Registry
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    # Build Docker image using Dockerfile
     - docker build -t $DOCKER_IMAGE:latest .
-    # Tag image with commit SHA
     - docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
-    # Push both tags to GitLab Container Registry
     - docker push $DOCKER_IMAGE:latest
     - docker push $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
   only:
