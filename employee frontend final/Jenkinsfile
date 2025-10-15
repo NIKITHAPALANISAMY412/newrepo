@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                echo '📥 Checking out source code...'
+                echo ' Checking out source code...'
                 git branch: 'main', url: 'https://github.com/NIKITHAPALANISAMY412/newrepo.git'
             }
         }
@@ -18,8 +18,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo '🐳 Building Docker image...'
-                    sh 'docker build -t $IMAGE_NAME .'
+                    echo ' Building Docker image...'
+                    sh 'docker build -t $IMAGE_NAME ./employee frontend final'
                 }
             }
         }
@@ -27,12 +27,9 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    echo '🚀 Running container for testing...'
-                    // Stop & remove old container if it exists
+                    echo 'Running container for testing...'
                     sh 'docker stop $CONTAINER_NAME || true'
                     sh 'docker rm $CONTAINER_NAME || true'
-                    
-                    // Run the new container (serves Angular app via Nginx)
                     sh 'docker run -d --name $CONTAINER_NAME -p 4200:80 $IMAGE_NAME'
                 }
             }
@@ -47,12 +44,31 @@ pipeline {
             }
         }
 
-        // OPTIONAL: Push to Docker Hub
         stage('Push to Docker Hub') {
             when {
-                expression { return env.DOCKERHUB_USER != "your_dockerhub_username" } // only if configured
+                expression { return env.DOCKERHUB_USER != "your_dockerhub_username" }
             }
             steps {
                 script {
-                    echo '📦 Pushing image to Docker Hub...'
+                    echo 'Pushing image to Docker Hub...'
                     withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKERHUB_TOKEN')]) {
+                        sh """
+                            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                            docker tag $IMAGE_NAME $DOCKERHUB_USER/$IMAGE_NAME:latest
+                            docker push $DOCKERHUB_USER/$IMAGE_NAME:latest
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo ' Frontend build and deployment successful!'
+        }
+        failure {
+            echo ' Build failed. Please check the logs.'
+        }
+    }
+}
