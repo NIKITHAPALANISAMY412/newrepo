@@ -4,14 +4,14 @@ pipeline {
     environment {
         IMAGE_NAME = "frontend-app"
         CONTAINER_NAME = "frontend-container"
-        DOCKERHUB_USER = "your_dockerhub_username"   
+        DOCKERHUB_USER = "nikithap2002"   
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 echo '📥 Checking out source code...'
-                git branch: 'main', url: 'https://github.com/your-username/your-frontend-repo.git'
+                git branch: 'main', url: 'https://github.com/NIKITHAPALANISAMY412/newrepo.git'
             }
         }
 
