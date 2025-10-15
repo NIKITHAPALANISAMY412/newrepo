@@ -3,7 +3,7 @@ stages:
   - docker
 
 variables:
-  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE/angular-frontend"
+  DOCKER_IMAGE: "yourdockerhubusername/angular-frontend"
   NODE_VERSION: "20"
 
 # Stage 1: Build Angular App
@@ -11,11 +11,8 @@ build-frontend:
   stage: build
   image: node:$NODE_VERSION
   script:
-    # Go to Angular project folder
     - cd "employee frontend final"
-    # Install dependencies
     - npm install
-    # Build Angular app using local CLI
     - npx ng build --prod
   artifacts:
     paths:
@@ -23,7 +20,7 @@ build-frontend:
   only:
     - dev
 
-# Stage 2: Build and Push Docker Image
+# Stage 2: Build and push Docker image to Docker Hub
 docker-build-push:
   stage: docker
   image: docker:24.0.5
@@ -32,17 +29,18 @@ docker-build-push:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    # Login to GitLab Container Registry
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    # Login to Docker Hub
+    - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
   script:
-    # Build Docker image (adjust path if Dockerfile is inside Angular folder)
+    # Build Docker image
     - docker build -t $DOCKER_IMAGE:latest .
     - docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
-    # Push both tags
+    # Push both tags to Docker Hub
     - docker push $DOCKER_IMAGE:latest
     - docker push $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
   only:
     - dev
+
 
 
 
