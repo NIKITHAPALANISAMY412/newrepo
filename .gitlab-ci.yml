@@ -21,7 +21,6 @@ build-frontend:
     - dev
 
 
-# Stage 2: Build and Push Docker Image to Docker Hub
 docker-build-push:
   stage: docker
   image: docker:24.0.5
@@ -30,18 +29,16 @@ docker-build-push:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    # Login to Docker Hub using GitLab CI/CD variables
     - echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
   script:
-    # Build Docker image
-    - docker build -t $DOCKER_IMAGE:latest .
-    # Tag image with commit SHA
+    # Build Docker image from Angular folder
+    - docker build -t $DOCKER_IMAGE:latest "employee frontend final"
     - docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
-    # Push both tags to Docker Hub
     - docker push $DOCKER_IMAGE:latest
     - docker push $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
   only:
     - dev
+
 
 
 
