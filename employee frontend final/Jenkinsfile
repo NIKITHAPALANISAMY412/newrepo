@@ -32,7 +32,8 @@ pipeline {
                     echo 'Running container for testing...'
                     sh 'docker stop $CONTAINER_NAME || true'
                     sh 'docker rm $CONTAINER_NAME || true'
-                    sh 'docker run -d --name $CONTAINER_NAME -p 4200:80 $IMAGE_NAME'
+                    sh 'docker run -d --name $CONTAINER_NAME -p 4300:80 $IMAGE_NAME'
+
                 }
             }
         }
