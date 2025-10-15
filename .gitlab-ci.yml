@@ -7,22 +7,19 @@ variables:
   DOCKER_IMAGE: "yourdockerhubusername/angular-frontend"
   NODE_VERSION: "20"
 
-# Stage 1: Build Angular App
 build-frontend:
   stage: build
   image: node:$NODE_VERSION
   script:
-    # Go to Angular project folder
     - cd "employee frontend final"
-    # Install dependencies
     - npm install
-    # Build Angular app using local CLI
-    - npx ng build --prod
+    - npx ng build --configuration production
   artifacts:
     paths:
       - "employee frontend final/dist/"
   only:
     - dev
+
 
 # Stage 2: Build and Push Docker Image to Docker Hub
 docker-build-push:
