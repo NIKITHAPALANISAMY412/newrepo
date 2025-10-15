@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "frontend-app"
         CONTAINER_NAME = "frontend-container"
-        DOCKERHUB_USER = "your_dockerhub_username"   // optional if you plan to push
+        DOCKERHUB_USER = "your_dockerhub_username"   
     }
 
     stages {
