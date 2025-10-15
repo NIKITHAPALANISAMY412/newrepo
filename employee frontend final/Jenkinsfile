@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "frontend-app"
+        CONTAINER_NAME = "frontend-container"
+        DOCKERHUB_USER = "your_dockerhub_username"   // optional if you plan to push
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                echo '📥 Checking out source code...'
+                git branch: 'main', url: 'https://github.com/your-username/your-frontend-repo.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo '🐳 Building Docker image...'
+                    sh 'docker build -t $IMAGE_NAME .'
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    echo '🚀 Running container for testing...'
+                    // Stop & remove old container if it exists
+                    sh 'docker stop $CONTAINER_NAME || true'
+                    sh 'docker rm $CONTAINER_NAME || true'
+                    
+                    // Run the new container (serves Angular app via Nginx)
+                    sh 'docker run -d --name $CONTAINER_NAME -p 4200:80 $IMAGE_NAME'
+                }
+            }
+        }
+
+        stage('Verify Container') {
+            steps {
+                script {
+                    echo '🔍 Checking if container is running...'
+                    sh 'docker ps | grep $CONTAINER_NAME'
+                }
+            }
+        }
+
+        // OPTIONAL: Push to Docker Hub
+        stage('Push to Docker Hub') {
+            when {
+                expression { return env.DOCKERHUB_USER != "your_dockerhub_username" } // only if configured
+            }
+            steps {
+                script {
+                    echo '📦 Pushing image to Docker Hub...'
+                    withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKERHUB_TOKEN')]) {
