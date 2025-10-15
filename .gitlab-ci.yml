@@ -4,7 +4,7 @@ stages:
 
 variables:
   # Docker Hub image name
-  DOCKER_IMAGE: "yourdockerhubusername/angular-frontend"
+  DOCKER_IMAGE: "nikithap2002/angular-frontend"
   NODE_VERSION: "20"
 
 build-frontend:
