@@ -1,33 +1,40 @@
-# name: Backend - Build and Push Docker Image
+name: Frontend - Build & Test Docker Image (CI)
 
-# on:
-#   push:
-#     branches: ["main"]
-#   workflow_dispatch:
+on:
+  pull_request:
+    branches: ["develop", "main"]  # run CI when a PR targets develop or main
 
-# jobs:
-#   build-and-push:
-#     runs-on: ubuntu-latest
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Docker login
-#         uses: docker/login-action@v3
-#         with:
-#           username: ${{ secrets.DOCKER_USERNAME }}
-#           password: ${{ secrets.DOCKER_PASSWORD }}
+      # 2️⃣ Set up Node.js (if your frontend uses Node/Angular/React)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-#       - name: Build and push backend Docker image
-#         uses: docker/build-push-action@v6
-#         with:
-#           context: ./emp_backend
-#           file: ./emp_backend/Dockerfile
-#           push: true
-#           tags: |
-#             ${{ secrets.DOCKER_USERNAME }}/emp-backend:latest
-#             ${{ secrets.DOCKER_USERNAME }}/emp-backend:${{ github.sha }}
+      # 3️⃣ Install dependencies
+      - name: Install dependencies
+        run: |
+          cd emp_frontend
+          npm install
 
-#       - name: Success
-#         run: echo "Emp backend Docker image built and pushed successfully!"
+      # 4️⃣ Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t emp-frontend:test ./emp_frontend
+
+      # 5️⃣ Run frontend tests inside Docker
+      - name: Run frontend tests
+        run: |
+          docker run --rm emp-frontend:test sh -c "npm test"  # replace with your test command
+
+      # 6️⃣ Success message
+      - name: Success
+        run: echo "Frontend Docker image built and tests passed successfully!"
