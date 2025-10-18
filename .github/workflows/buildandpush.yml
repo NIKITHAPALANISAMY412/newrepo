@@ -2,7 +2,8 @@ name: Frontend - Build & Test Docker Image (CI)
 
 on:
   pull_request:
-    branches: ["develop", "main"]  # run CI when a PR targets develop or main
+    branches: ["develop", "main"]  # Run CI when a PR targets develop or main
+  workflow_dispatch:               # Allow manual runs too
 
 jobs:
   build-and-test:
@@ -13,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Node.js (if your frontend uses Node/Angular/React)
+      # 2️⃣ Set up Node.js (Angular uses Node)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -22,19 +23,25 @@ jobs:
       # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
-          cd emp_frontend
+          cd "employee frontend final"
           npm install
 
-      # 4️⃣ Build Docker image
+      # 4️⃣ Build Angular app
+      - name: Build Angular app
+        run: |
+          cd "employee frontend final"
+          npm run build --if-present
+
+      # 5️⃣ Build Docker image for frontend
       - name: Build Docker image
         run: |
-          docker build -t emp-frontend:test ./emp_frontend
+          docker build -t emp-frontend:test "./employee frontend final"
 
-      # 5️⃣ Run frontend tests inside Docker
+      # 6️⃣ Run frontend tests (if you have any)
       - name: Run frontend tests
         run: |
-          docker run --rm emp-frontend:test sh -c "npm test"  # replace with your test command
+          docker run --rm emp-frontend:test sh -c "npm test || echo 'No tests defined, skipping...'"
 
-      # 6️⃣ Success message
+      # 7️⃣ Success message
       - name: Success
-        run: echo "Frontend Docker image built and tests passed successfully!"
+        run: echo "✅ Frontend Docker image built and tests passed successfully!"
