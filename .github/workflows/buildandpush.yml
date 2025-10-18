@@ -1,47 +1,63 @@
-name: Frontend - Build & Test Docker Image (CI)
+name: Frontend - Build, Push & Deploy (CI/CD)
 
 on:
-  pull_request:
-    branches: ["develop", "main"]  # Run CI when a PR targets develop or main
-  workflow_dispatch:               # Allow manual runs too
+  push:
+    branches: ["develop"]   # Deploy automatically when merging to develop
+  workflow_dispatch:         # Allow manual deployment
 
 jobs:
-  build-and-test:
+  build-test-push-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Set up Node.js (Angular uses Node)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           cd "employee frontend final"
           npm install
 
-      # 4️⃣ Build Angular app
       - name: Build Angular app
         run: |
           cd "employee frontend final"
           npm run build --if-present
 
-      # 5️⃣ Build Docker image for frontend
       - name: Build Docker image
         run: |
-          docker build -t emp-frontend:test "./employee frontend final"
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/emp-frontend:latest "./employee frontend final"
+          docker tag ${{ secrets.DOCKER_USERNAME }}/emp-frontend:latest ${{ secrets.DOCKER_USERNAME }}/emp-frontend:${{ github.sha }}
 
-      # 6️⃣ Run frontend tests (if you have any)
-      - name: Run frontend tests
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker image
         run: |
-          docker run --rm emp-frontend:test sh -c "npm test || echo 'No tests defined, skipping...'"
+          docker push ${{ secrets.DOCKER_USERNAME }}/emp-frontend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/emp-frontend:${{ github.sha }}
 
-      # 7️⃣ Success message
+      # 🚀 Deploy to Test Server
+      - name: Deploy to Test Server via SSH
+        if: github.ref == 'refs/heads/develop'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.TEST_SERVER_IP }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          key: ${{ secrets.TEST_SERVER_SSH_KEY }}
+          script: |
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            docker pull ${{ secrets.DOCKER_USERNAME }}/emp-frontend:latest
+            docker stop emp-frontend || true
+            docker rm emp-frontend || true
+            docker run -d -p 80:80 --name emp-frontend ${{ secrets.DOCKER_USERNAME }}/emp-frontend:latest
+
       - name: Success
-        run: echo "✅ Frontend Docker image built and tests passed successfully!"
+        run: echo "✅ Frontend deployed successfully to test server!"
